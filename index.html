@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dockwa × Clay: Sales Workflow</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    color: #1a2332;
+    padding: 32px 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a2332;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7a8d;
+    margin-bottom: 36px;
+  }
+
+  /* ── PIPELINE STAGES ── */
+  .pipeline {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 12px;
+  }
+  .stage-wrap {
+    display: flex;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 190px;
+  }
+  .stage {
+    flex: 1;
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    padding: 16px 14px;
+    min-height: 340px;
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stage-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .stage-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1a2332;
+    line-height: 1.3;
+  }
+  .stage-sub {
+    font-size: 10px;
+    color: #6b7a8d;
+    font-style: italic;
+    margin-bottom: 10px;
+    padding-left: 0;
+  }
+
+  /* Arrow connector */
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    padding-top: 30px;
+  }
+  .arrow svg { color: #94a3b8; }
+
+  /* Clay block */
+  .clay-block {
+    background: #f8f9ff;
+    border: 1.5px solid #c7d2fe;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .clay-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #4f46e5;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .clay-desc {
+    font-size: 11px;
+    color: #374151;
+    line-height: 1.5;
+  }
+  .clay-desc li {
+    margin-left: 12px;
+    margin-bottom: 2px;
+  }
+
+  /* Signal block */
+  .signal-block {
+    background: #fffbeb;
+    border: 1.5px solid #fcd34d;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .signal-label {
+    font-size: 10px; font-weight: 700;
+    color: #d97706; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+
+  /* Output block */
+  .output-block {
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+  }
+  .output-label {
+    font-size: 10px; font-weight: 700;
+    color: #16a34a; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+
+  /* ── COLORS per stage ── */
+  .s1 .stage-num { background: #6366f1; }
+  .s1 { border-top: 3px solid #6366f1; }
+  .s2 .stage-num { background: #0ea5e9; }
+  .s2 { border-top: 3px solid #0ea5e9; }
+  .s3 .stage-num { background: #f59e0b; }
+  .s3 { border-top: 3px solid #f59e0b; }
+  .s4 .stage-num { background: #10b981; }
+  .s4 { border-top: 3px solid #10b981; }
+  .s5 .stage-num { background: #ef4444; }
+  .s5 { border-top: 3px solid #ef4444; }
+
+  /* ── SECTION ROW BELOW ── */
+  .section-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 28px;
+  }
+  .section-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    padding: 18px;
+  }
+  .section-card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-card h3 .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  /* Cadence table */
+  .cadence-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .cadence-table th {
+    background: #f8fafc;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 1.5px solid #e2e8f0;
+  }
+  .cadence-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: top;
+    color: #374151;
+    line-height: 1.4;
+  }
+  .cadence-table tr:last-child td { border-bottom: none; }
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-purple { background: #ede9fe; color: #6d28d9; }
+  .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .badge-green  { background: #dcfce7; color: #15803d; }
+  .badge-amber  { background: #fef3c7; color: #b45309; }
+  .badge-red    { background: #fee2e2; color: #b91c1c; }
+
+  /* Research tax callout */
+  .callout {
+    background: #fef9ee;
+    border-left: 4px solid #f59e0b;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #374151;
+    line-height: 1.6;
+  }
+  .callout strong { color: #d97706; }
+
+  /* Waterfall */
+  .waterfall {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .wf-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    color: #374151;
+  }
+  .wf-step .wf-icon {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .wf-step .wf-name { font-weight: 600; }
+  .wf-step .wf-desc { color: #6b7a8d; font-size: 10px; }
+  .wf-arrow-down {
+    text-align: center;
+    color: #cbd5e1;
+    font-size: 14px;
+    line-height: 1;
+    margin: -2px 0;
+    padding-left: 14px;
+  }
+
+  /* Footer note */
+  .footer {
+    margin-top: 28px;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  .tag {
+    display: inline-block;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+    color: #475569;
+    margin: 1px 2px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Dockwa × Clay — Sales Workflow Diagram</h1>
+<p class="subtitle">How Clay fits into every stage of the Dockwa sales process, from Seek List to Salesforce</p>
+
+<!-- ══════════════════════════════════════════════
+     PIPELINE STAGES
+══════════════════════════════════════════════ -->
+<div class="pipeline">
+
+  <!-- ── STAGE 1: DATA LAYER / SEEK LIST ── -->
+  <div class="stage-wrap">
+    <div class="stage s1">
+      <div class="stage-header">
+        <div class="stage-num">1</div>
+        <div class="stage-title">Seek List<br>Enrichment</div>
+      </div>
+      <p class="stage-sub">Current: manual research per account</p>
+
+      <div class="clay-block">
+        <div class="clay-label">🔧 Clay automates</div>
+        <div class="clay-desc">
+          <ul>
+            <li>Import Salesforce seek list via API</li>
+            <li>Scrape marina website for services, booking form, quality signals</li>
+            <li>Pull Marinas.com profile data & reviews</li>
+            <li>Verify ICP flag: Class A harbor + Dockage/Fuel revenue</li>
+            <li>Enrich fuel dock, asset count (slips), harbor classification</li>
+            <li>Detect existing MMS (Dockmaster, Halyards, DockMaster Cloud etc.)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signal-block">
+        <div class="signal-label">⚡ ICP Score Output</div>
+        <div class="clay-desc">
+          <span class="tag">Is_ICP = Yes</span>
+          <span class="tag">Harbor = Class A</span>
+          <span class="tag">Fuel = Yes/No</span>
+          <span class="tag">Asset count</span>
+          <span class="tag">Incumbent MMS</span>
+        </div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-label">✅ Output</div>
+        <div class="clay-desc">Ranked seek list with ICP score. Top ICP accounts auto-flagged for immediate rep action. Replaces ~2 hrs/week of manual research per rep.</div>
+      </div>
+    </div>
+    <div class="arrow"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+  </div>
+
+  <!-- ── STAGE 2: SIGNAL-BASED PRIORITIZATION ── -->
+  <div class="stage-wrap">
+    <div class="stage s2">
+      <div class="stage-header">
+        <div class="stage-num">2</div>
+        <div class="stage-title">Signal-Based<br>Prioritization</div>
+      </div>
+      <p class="stage-sub">Current: rep judgment on who to call first</p>
+
+      <div class="clay-block">
+        <div class="clay-label">🔧 Clay signals</div>
+        <div class="clay-desc">
+          <ul>
+            <li><strong>Claimed + inquiries received</strong> → warm lead, not paying → highest priority</li>
+            <li><strong>Outdated/no website</strong> → tech pain signal → pitch digital tools</li>
+            <li><strong>Nearby Dockwa customers</strong> → social proof available → strong pitch</li>
+            <li><strong>Has fuel dock, no Dockwa Fuel</strong> → expansion play</li>
+            <li><strong>High inquiry count, no booking</strong> → lost revenue pain</li>
+            <li><strong>Legacy MMS detected</strong> → competitive displacement play</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signal-block">
+        <div class="signal-label">⚡ Priority Tiers</div>
+        <div class="clay-desc">
+          <span class="badge badge-red">Tier 1: Claimed + Active Inquiries</span><br><br>
+          <span class="badge badge-amber">Tier 2: ICP, No Dockwa, Legacy MMS</span><br><br>
+          <span class="badge badge-blue">Tier 3: ICP, No signals yet</span>
+        </div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-label">✅ Output</div>
+        <div class="clay-desc">Scored, signal-layered account list. Reps work the right 200 accounts instead of 2,000 without a system.</div>
+      </div>
+    </div>
+    <div class="arrow"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+  </div>
+
+  <!-- ── STAGE 3: CONTACT FINDING ── -->
+  <div class="stage-wrap">
+    <div class="stage s3">
+      <div class="stage-header">
+        <div class="stage-num">3</div>
+        <div class="stage-title">Decision Maker<br>Contact Finding</div>
+      </div>
+      <p class="stage-sub">Current: Google search, main line calls, asking hostesses</p>
+
+      <div class="clay-block">
+        <div class="clay-label">🔧 Clay waterfall</div>
+        <div class="clay-desc">
+          Marina owners aren't on LinkedIn. Clay runs a waterfall to find owner mobile numbers and direct emails:
+          <ul style="margin-top:5px">
+            <li>AI web scrape of marina website + Google Business</li>
+            <li>Marinas.com contact data</li>
+            <li>Apollo / Hunter for email</li>
+            <li>Reverse phone lookup tools</li>
+            <li>AI prompt: "Find the owner of [Marina Name] in [City, State]"</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signal-block">
+        <div class="signal-label">⚡ Target contacts</div>
+        <div class="clay-desc">
+          <span class="tag">Owner / General Manager</span>
+          <span class="tag">Direct mobile (not front desk)</span>
+          <span class="tag">Personal email</span>
+          <span class="tag">Dockmaster role</span>
+        </div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-label">✅ Output</div>
+        <div class="clay-desc">Owner mobile + email per account, auto-synced to Salesforce contact record. Eliminates the "speaking to hostesses" problem identified in Dockwa's own pre-call guide.</div>
+      </div>
+    </div>
+    <div class="arrow"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+  </div>
+
+  <!-- ── STAGE 4: PRE-CALL BRIEF + PERSONALIZATION ── -->
+  <div class="stage-wrap">
+    <div class="stage s4">
+      <div class="stage-header">
+        <div class="stage-num">4</div>
+        <div class="stage-title">Pre-Call Brief &<br>Personalization</div>
+      </div>
+      <p class="stage-sub">Current: 4-step manual research guide per rep</p>
+
+      <div class="clay-block">
+        <div class="clay-label">🔧 Clay AI research brief</div>
+        <div class="clay-desc">
+          Auto-generates the Dockwa Pre-Call Research Guide for every account:
+          <ul style="margin-top:5px">
+            <li>Website quality & digital readiness score</li>
+            <li>Services offered (fuel, dry stack, transient, F&B)</li>
+            <li>Online booking capability: Yes/No</li>
+            <li>Marinas.com reviews summary & pain themes</li>
+            <li>Inquiries received count + recency</li>
+            <li>Nearby Dockwa customers for social proof</li>
+            <li>Incumbent MMS + competitive playbook tag</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signal-block">
+        <div class="signal-label">⚡ Personalized outreach</div>
+        <div class="clay-desc">Clay AI writes a personalized first-touch email per account:<br><br>
+        <em>"Hi [Owner], I noticed [Marina] is getting boater inquiries through Marinas.com but doesn't have online booking yet. [Nearby marina] just started using Dockwa and…"</em>
+        </div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-label">✅ Output</div>
+        <div class="clay-desc">1-page account brief + personalized email draft per account. Eliminates ~10 min manual research per account, every time.</div>
+      </div>
+    </div>
+    <div class="arrow"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div>
+  </div>
+
+  <!-- ── STAGE 5: CADENCE ROUTING + CRM SYNC ── -->
+  <div class="stage-wrap">
+    <div class="stage s5">
+      <div class="stage-header">
+        <div class="stage-num">5</div>
+        <div class="stage-title">Cadence Routing<br>& CRM Sync</div>
+      </div>
+      <p class="stage-sub">Current: rep manually assigns cadence in Salesforce</p>
+
+      <div class="clay-block">
+        <div class="clay-label">🔧 Clay auto-routes</div>
+        <div class="clay-desc">
+          Based on enriched signals, Clay routes each account to the correct Salesforce cadence:
+          <ul style="margin-top:5px">
+            <li><strong>ICP + Full System Benefits</strong> → Class A, no Dockwa, legacy MMS</li>
+            <li><strong>ICP + Transient Network</strong> → Has transient, no booking form</li>
+            <li><strong>ICP + Claim (Warm)</strong> → Claimed, active inquiries, $0 ARR</li>
+            <li><strong>ICP + Fuel Only</strong> → Has fuel dock, no Dockwa Fuel</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signal-block">
+        <div class="signal-label">⚡ Salesforce push</div>
+        <div class="clay-desc">
+          Clay writes back to Salesforce:
+          <span class="tag">ICP Score</span>
+          <span class="tag">Contact + mobile</span>
+          <span class="tag">Cadence assignment</span>
+          <span class="tag">Research brief in notes</span>
+          <span class="tag">Signal tags</span>
+        </div>
+      </div>
+
+      <div class="output-block">
+        <div class="output-label">✅ Output</div>
+        <div class="clay-desc">Rep opens Salesforce, sees prioritized accounts with correct cadence pre-loaded, owner mobile populated, and research brief in the notes field. Ready to dial.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end pipeline -->
+
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM ROWS
+══════════════════════════════════════════════ -->
+<div class="section-row">
+
+  <!-- LEFT: Cadence matching table -->
+  <div class="section-card">
+    <h3><span class="dot" style="background:#6366f1"></span> Clay Signal → Salesforce Cadence Mapping</h3>
+    <table class="cadence-table">
+      <thead>
+        <tr>
+          <th>Clay Signal(s)</th>
+          <th>Salesforce Cadence</th>
+          <th>Pitch Focus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>ICP = Yes · No Dockwa · Legacy MMS detected</td>
+          <td><span class="badge badge-purple">ICP – Full System Benefits</span></td>
+          <td>Full platform replacement, ROI vs. legacy system</td>
+        </tr>
+        <tr>
+          <td>Has transient · No online booking · Class A harbor</td>
+          <td><span class="badge badge-blue">ICP – Transient Network & Web Booking</span></td>
+          <td>Lost bookings, Dockwa marketplace exposure</td>
+        </tr>
+        <tr>
+          <td>Claimed profile · Active inquiries · $0 ARR</td>
+          <td><span class="badge badge-amber">ICP – Claim Getting Leads</span></td>
+          <td>Show leads they're already receiving, upsell to paid</td>
+        </tr>
+        <tr>
+          <td>Has fuel dock · No Dockwa Fuel module</td>
+          <td><span class="badge badge-green">ICP – Fuel Only</span></td>
+          <td>Fuel POS, transaction management, payment processing</td>
+        </tr>
+        <tr>
+          <td>Non-ICP · Small asset count · Inland</td>
+          <td><span class="badge badge-red">Deprioritize / Nurture only</span></td>
+          <td>Low-touch email nurture sequence, not AE time</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- RIGHT: Contact waterfall -->
+  <div class="section-card">
+    <h3><span class="dot" style="background:#0ea5e9"></span> Clay Contact-Finding Waterfall for Marina Owners</h3>
+
+    <div class="callout">
+      Marina owners aren't on LinkedIn — <strong>< 10% LinkedIn coverage</strong> vs. 85%+ for enterprise. The research guide in Confluence documents 4 manual steps reps must complete per account. Clay compresses this to <strong>seconds per account</strong>.
+    </div>
+
+    <div class="waterfall">
+      <div class="wf-step">
+        <div class="wf-icon" style="background:#ede9fe">🌐</div>
+        <div>
+          <div class="wf-name">Marina Website Scrape</div>
+          <div class="wf-desc">AI extracts owner/GM name, phone, email from About/Contact pages</div>
+        </div>
+      </div>
+      <div class="wf-arrow-down">↓</div>
+      <div class="wf-step">
+        <div class="wf-icon" style="background:#dbeafe">⚓</div>
+        <div>
+          <div class="wf-name">Marinas.com Profile Data</div>
+          <div class="wf-desc">Contact info, reviews, amenities, asset count</div>
+        </div>
+      </div>
+      <div class="wf-arrow-down">↓</div>
+      <div class="wf-step">
+        <div class="wf-icon" style="background:#dcfce7">🔍</div>
+        <div>
+          <div class="wf-name">Google Business Profile</div>
+          <div class="wf-desc">Ownership, phone number, hours, reviews sentiment</div>
+        </div>
+      </div>
+      <div class="wf-arrow-down">↓</div>
+      <div class="wf-step">
+        <div class="wf-icon" style="background:#fef3c7">📧</div>
+        <div>
+          <div class="wf-name">Apollo / Hunter Email Waterfall</div>
+          <div class="wf-desc">Find direct owner email (not info@, not dock@)</div>
+        </div>
+      </div>
+      <div class="wf-arrow-down">↓</div>
+      <div class="wf-step">
+        <div class="wf-icon" style="background:#fee2e2">🤖</div>
+        <div>
+          <div class="wf-name">AI Prompt Fallback</div>
+          <div class="wf-desc">"Who owns [Marina Name] in [City, State]?" — scours public records, news, gov licensing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end section-row -->
+
+
+<!-- ══════════════════════════════════════════════
+     RESEARCH TAX ROW
+══════════════════════════════════════════════ -->
+<div class="section-row" style="grid-template-columns: 1fr 1fr 1fr; margin-top: 20px;">
+
+  <div class="section-card">
+    <h3><span class="dot" style="background:#ef4444"></span> The Research Tax — Without Clay</h3>
+    <div class="clay-desc" style="font-size:12px; line-height:1.7; color:#374151;">
+      Based on Dockwa's own Pre-Call Research Guide, each rep completes <strong>4 manual steps</strong> before dialing:<br><br>
+      1. Review marina website (aesthetics, services, booking)<br>
+      2. Location + competitive check (nearby Dockwa marinas)<br>
+      3. Marinas.com review + inquiry data<br>
+      4. Salesforce account history + incumbent MMS<br><br>
+      <strong>~10 min per account × 50 accounts/week = 8+ hrs/week per rep not selling.</strong><br><br>
+      At a $50/hr fully loaded cost: <strong>~$20k/year per rep in lost selling time.</strong>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h3><span class="dot" style="background:#10b981"></span> With Clay — What Changes</h3>
+    <div class="clay-desc" style="font-size:12px; line-height:1.7; color:#374151;">
+      Clay runs the Pre-Call Research Guide automatically, in bulk, before the rep ever opens the account:<br><br>
+      ✅ Website quality + services auto-scraped<br>
+      ✅ Marinas.com inquiry count auto-populated<br>
+      ✅ Nearby Dockwa customers auto-identified<br>
+      ✅ Incumbent MMS auto-detected<br>
+      ✅ ICP flag auto-confirmed or overridden<br>
+      ✅ Owner mobile number found, not just main line<br><br>
+      <strong>Rep opens Salesforce. Everything is already there. They dial.</strong>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h3><span class="dot" style="background:#6366f1"></span> Quick Wins to Start</h3>
+    <div class="clay-desc" style="font-size:12px; line-height:1.7; color:#374151;">
+      <strong>1. Claimed marina list enrichment</strong><br>
+      ~1,350 non-paying Dockwa profiles. Clay scores which have active inquiries and auto-routes to warm cadence.<br><br>
+      <strong>2. Top 10 ICP account research</strong><br>
+      Each AE already identifies their Top 10 ICP accounts. Clay builds the research brief for all 10 in one run.<br><br>
+      <strong>3. Fuel dock displacement list</strong><br>
+      Filter seek list for "Has fuel dock = Yes + No Dockwa Fuel module" → auto-generate a fuel-specific outreach list.<br><br>
+      <strong>4. Weekly seek list refresh</strong><br>
+      Schedule Clay to re-enrich seek lists weekly, catching marina openings, closures, and ownership changes.
+    </div>
+  </div>
+
+</div>
+
+<p class="footer">Built from Dockwa Confluence (Sales Process · ICP Playbook · Pre-Call Research Guide · Seek Lists · Qualification Checklist) + Datalane Canonical Guide to Selling to Local</p>
+
+</body>
+</html>
